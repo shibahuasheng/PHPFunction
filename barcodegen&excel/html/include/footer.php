@@ -66,7 +66,7 @@ if (!defined('IN_CB')) { die('You are not allowed to access to this page.'); }
                     <input type="submit" value="提交" />
                 </form>
                 <br />-->
-
+                <h2>请在excel第一列输入数据</h2>
                <input id="fileToUpload" type="file" size="20" name="fileToUpload" class="input">
                 <button id="buttonUpload">上传</button>
             </footer>

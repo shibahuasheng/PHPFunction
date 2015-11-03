@@ -1,5 +1,6 @@
 <?php
 //登录等其他验证，例如下面的获取$uid
+
 //print_r($_FILES);
 /*if(move_uploaded_file($_FILES['file']['tmp_name'],'./user/up.xls'))//上传文件，成功返回true
 {echo '上传成功';
@@ -64,7 +65,8 @@ $data = new Spreadsheet_Excel_Reader();
 $data->setOutputEncoding('UTF-8');
 $data->read($_FILES[$fileElementName]['tmp_name']);//读取excel
 
-$uid = $_SESSION['uid'];
+/*$uid = $_SESSION['uid'];*///这一句在正式代码中取得相应的唯一标识量
+$uid = 41;
 $path = "../user/".$uid."/code/";
 createDir($path);
 rmdirs($path);
@@ -77,9 +79,9 @@ for ($i = 1; $i <= $data->sheets[0]['numRows']; $i++) {
     }
     //for ($j = 1; $j <= $data->sheets[0]['numCols']; $j++) {
         //显示每个单元格内容
-        $code =  $data->sheets[0]['cells'][$i][1];
+        $code =  @$data->sheets[0]['cells'][$i][1];
     // }
-
+    $error = "";
     if($code){
         /*if(isset($_REQUEST['codebar']) && ($_REQUEST['text'])){*/
         /* $codebar = $_REQUEST['codebar']; *///条形码将要数据的内容

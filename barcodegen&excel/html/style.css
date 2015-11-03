@@ -209,7 +209,14 @@ nav:after{
     content: '';
     clear:both;
 }
-footer h1{
+footer h1 {
     display: block;
     color: #E67A32;
+    margin:0 auto;
+}
+footer h2{
+    font-size:10px ;
+    color: #E6AB83;
+    margin-top:0;
+
 }
