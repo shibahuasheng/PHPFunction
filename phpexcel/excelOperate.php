@@ -64,11 +64,24 @@ if(@move_uploaded_file($_FILES[$fileElementName]['tmp_name'],$upFilePath) === FA
 set_include_path(get_include_path() . PATH_SEPARATOR . './Classes/');
 include 'PHPExcel/IOFactory.php';
 
+//读出excel数据
 $exceldata = excelRead(($_FILES[$fileElementName]['tmp_name']));
+//读出错返回错误json
+
+
+//你自己对应的数据处理和筛选
+
+
+//如果要保存或者是输出对应反馈excel
 excelWrite('data',$a = array(), $exceldata, false, 5);
 
 
-
+/**
+ * @param $filename
+ * @return array
+ * @throws PHPExcel_Exception
+ * @throws PHPExcel_Reader_Exception
+ */
 function excelRead($filename){
     $objReader = PHPExcel_IOFactory::createReader('Excel5');
     $objReader->setReadDataOnly(true);
