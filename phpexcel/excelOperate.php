@@ -154,18 +154,21 @@ function getExcelColumnValue($index){
 /**
  * @param $fileName
  * @param $headArr
- * @param $data   excel数据
- * @param bool|false $local  默认浏览器喜爱啊excel
+ * @param $data    excel数据
+ * @param bool|false $colNum  默认不限制列数，防止有些很末尾的列数隐藏数值而中间都是空的
+ * @param bool|false $local  默认浏览器下载excel
  * @throws PHPExcel_Exception
- * @throws PHPExcel_Reader_Exception
  */
-    function excelWrite($fileName, $headArr, $data, $local = false)
+    function excelWrite($fileName, $headArr, $data,$local = false, $colNum = false)
     {
         if (empty($data) || !is_array($data)) {
             die("data must be a array");
         }
         if (empty($fileName)) {
             exit;
+        }
+        if(is_numeric($colNum) && is_int($colNum+0) && ((int)$colNum > 0) ) {
+            $colNum = true;
         }
         $date = date("Y_m_d", time());
        /* if($local) {
@@ -183,23 +186,76 @@ function getExcelColumnValue($index){
         if(is_array($headArr) && !empty($headArr)){
             //设置表头
             $columindex = 0;
-            foreach ($headArr as $key => $v) {
-                $colum = getExcelColumnValue($columindex);
-                $objPHPExcel->setActiveSheetIndex(0)->setCellValue($colum . '1', $v);
-                $columindex++;
-            }
+                foreach ($headArr as $key => $v) {
+                    if($colNum ) {
+                        if(((int)$columindex < (int)$colNum)) {
+                            $colum = getExcelColumnValue($columindex);
+                            $objPHPExcel->setActiveSheetIndex(0)->setCellValue($colum . '1', $v);
+                            $columindex++;
+                        }
+                    }else{
+                        $colum = getExcelColumnValue($columindex);
+                        $objPHPExcel->setActiveSheetIndex(0)->setCellValue($colum . '1', $v);
+                        $columindex++;
+                    }
+                }
+
             $row = 2;
         }else{
             $row = 1;
         }
 
         $objActSheet = $objPHPExcel->getActiveSheet();
+        $objPHPExcel->getActiveSheet()->getStyle( 'A1:E1')->getFill()->getStartColor()->setARGB('FF0094FF');
+        //$objPHPExcel->getActiveSheet()->getStyle( 'A1:E1')->getFill()->setFillType(PHPExcel_Style_Fill::FILL_SOLID);
+        /*$objPHPExcel->getActiveSheet()->getStyle( 'A3:A10')->applyFromArray(
+            array(
+                'font'    => array (
+                    'bold'      => true
+                ),
+                'alignment' => array (
+                    'horizontal' => PHPExcel_Style_Alignment::HORIZONTAL_RIGHT ,
+                ),
+                'borders' => array (
+                    'top'     => array (
+                        'style' => PHPExcel_Style_Border::BORDER_THIN
+                    )
+                ),
+                'fill' => array (
+                    'type'       => PHPExcel_Style_Fill::FILL_GRADIENT_LINEAR ,
+                    'rotation'   => 90,
+                    'startcolor' => array (
+                        'argb' => 'FFA0A0A0'
+                    ),
+                    'endcolor'   => array (
+                        'argb' => 'FF0094FF'
+                    )
+                )
+            )
+        );*/
+
         foreach ($data as $key => $rows) { //行写入
             $columindex = 0;
             foreach ($rows as $keyName => $value) {// 列写入
-                $colum = getExcelColumnValue($columindex);
-                $objActSheet->setCellValue($colum . $row, $value);
-                $columindex++;
+                if($colNum){
+                    if(((int)$columindex < (int)$colNum)) {
+                        $colum = getExcelColumnValue($columindex);
+                        //宽度
+                        //$objActSheet->getColumnDimension($colum)->setAutoSize(true);
+                        //颜色
+                        $objPHPExcel->getActiveSheet()->getStyle('A1')->getFill()->getStartColor()->setARGB('FF808080');
+                        $objActSheet->setCellValue($colum . $row, $value);
+                        $columindex++;
+                    }
+                } else {
+                    $colum = getExcelColumnValue($columindex);
+                    //宽度
+                    //$objActSheet->getColumnDimension($colum)->setAutoSize(true);
+                    //颜色
+                //$objPHPExcel->getActiveSheet()->getStyle('A1')->getFill()->getStartColor()->setARGB('FF808080');
+                    $objActSheet->setCellValue($colum . $row, $value);
+                    $columindex++;
+                }
             }
             $row++;
         }
