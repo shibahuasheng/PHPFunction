@@ -62,19 +62,15 @@ if(@move_uploaded_file($_FILES[$fileElementName]['tmp_name'],$upFilePath) === FA
 //require_once('Classes/PHPExcel/Reader/Excel2007.php');
 //$objReader = new PHPExcel_Reader_Excel2007;
 //$objPHPExcel = $objReader->load("$_FILES[$fileElementName]['tmp_name']");
+//将include设置为./Classses/ 路径
 set_include_path(get_include_path() . PATH_SEPARATOR . './Classes/');
 include 'PHPExcel/IOFactory.php';
 
 $exceldata = excelRead(($_FILES[$fileElementName]['tmp_name']));
-excelWrite('a',$a = array(), $exceldata);
-die();
-//var_dump($exceldata);
-//excelWrite($exceldata, array('dmodai', 'sss', 'ww'), 'dmodalov');
-include 'PHPExcel/Writer/Excel2007.php';
-$objPHPExcel = new PHPExcel();
-$objWriter = new PHPExcel_Writer_Excel2007($objPHPExcel);
+excelWrite('data',$a = array(), $exceldata);
 //或者$objWriter = new PHPExcel_Writer_Excel5($objPHPExcel); 非2007格式
 //$objWriter->save("a.xlsx");  存储excel
+
 /*$objWriter = new PHPExcel_Writer_Excel5($objPHPExcel);
 header("Pragma: public");
 header("Expires: 0");
@@ -114,6 +110,7 @@ function excelRead($filename){
  * @param array $data  一个二维数组,结构如同从数据库查出来的数组
  * @param array $title excel的第一行标题,一个数组,如果为空则没有标题
  * @param string $filename  下载的文件名
+ *
  * exportexcel($arr,array('id','账户','密码','昵称'),'文件名!');
  */
 function excelWrite1($data=array(),$title=array(),$filename='report'){
@@ -154,7 +151,15 @@ function getExcelColumnValue($index){
     return $columnValue;
 }
 
-    function excelWrite($fileName, $headArr, $data)
+/**
+ * @param $fileName
+ * @param $headArr
+ * @param $data   excel数据
+ * @param bool|false $local  默认浏览器喜爱啊excel
+ * @throws PHPExcel_Exception
+ * @throws PHPExcel_Reader_Exception
+ */
+    function excelWrite($fileName, $headArr, $data, $local = false)
     {
         if (empty($data) || !is_array($data)) {
             die("data must be a array");
@@ -163,7 +168,13 @@ function getExcelColumnValue($index){
             exit;
         }
         $date = date("Y_m_d", time());
-        $fileName .= "_{$date}.xlsx";
+       /* if($local) {
+       //03兼容格式
+            $fileName .= "_{$date}.xls";
+        }else{
+            $fileName .= "_{$date}.xlsx";
+        }*/
+        $fileName .= "_{$date}.xls";
 
         //创建新的PHPExcel对象
         $objPHPExcel = new PHPExcel();
@@ -199,17 +210,17 @@ function getExcelColumnValue($index){
         //设置活动单指数到第一个表,所以Excel打开这是第一个表
         $objPHPExcel->setActiveSheetIndex(0);
         //将输出重定向到一个客户端web浏览器(Excel2007)
-        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        header("Content-Disposition: attachment; filename=\"$fileName\"");
-        header('Cache-Control: max-age=0');
-        $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
 
-        $objWriter->save('php://output');
-        die();
-        if (!empty($_GET['excel'])) {
-            $objWriter->save('php://output'); //文件通过浏览器下载
-        } else {
+        $objWriter = new PHPExcel_Writer_Excel5($objPHPExcel);
+
+        if($local) {
             $objWriter->save($fileName); //脚本方式运行，保存在当前目录
+        }else{
+            //$objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');这个中可以输出xlsx
+            header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+            header("Content-Disposition: attachment; filename=\"$fileName\"");
+            header('Cache-Control: max-age=0');
+            $objWriter->save('php://output');
         }
         exit;
 
