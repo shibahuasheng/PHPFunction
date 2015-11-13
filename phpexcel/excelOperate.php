@@ -54,5 +54,163 @@ if(@move_uploaded_file($_FILES[$fileElementName]['tmp_name'],$upFilePath) === FA
     $error = '上传失败';
     exit(json_encode($result));
 }*/
-$result['message'] = '上传成功';
-exit(json_encode($result));
+
+
+//开始处理excel
+//excel验证（标识符）todo
+//读取excel
+//require_once('Classes/PHPExcel/Reader/Excel2007.php');
+//$objReader = new PHPExcel_Reader_Excel2007;
+//$objPHPExcel = $objReader->load("$_FILES[$fileElementName]['tmp_name']");
+set_include_path(get_include_path() . PATH_SEPARATOR . './Classes/');
+include 'PHPExcel/IOFactory.php';
+
+$exceldata = excelRead(($_FILES[$fileElementName]['tmp_name']));
+excelWrite('a',$a = array(), $exceldata);
+die();
+//var_dump($exceldata);
+//excelWrite($exceldata, array('dmodai', 'sss', 'ww'), 'dmodalov');
+include 'PHPExcel/Writer/Excel2007.php';
+$objPHPExcel = new PHPExcel();
+$objWriter = new PHPExcel_Writer_Excel2007($objPHPExcel);
+//或者$objWriter = new PHPExcel_Writer_Excel5($objPHPExcel); 非2007格式
+//$objWriter->save("a.xlsx");  存储excel
+/*$objWriter = new PHPExcel_Writer_Excel5($objPHPExcel);
+header("Pragma: public");
+header("Expires: 0");
+header("Cache-Control:must-revalidate, post-check=0, pre-check=0;");
+header("Content-Type:application/force-download");
+header("Content-Type:application/vnd.ms-execl");
+header("Content-Type:application/octet-stream");
+header("Content-Type:application/download");;
+header('Content-Disposition:attachment;filename="resume.xls"');
+header("Content-Transfer-Encoding:binary");
+$objWriter->save('php://output');*/
+
+
+function excelRead($filename){
+    $objReader = PHPExcel_IOFactory::createReader('Excel5');
+    $objReader->setReadDataOnly(true);
+    $objPHPExcel = $objReader->load($filename);
+    $objWorksheet = $objPHPExcel->getActiveSheet();
+    $highestRow = $objWorksheet->getHighestRow();
+    $highestColumn = $objWorksheet->getHighestColumn();
+    $highestColumnIndex = PHPExcel_Cell::columnIndexFromString($highestColumn);
+    $excelData = array();
+    for ($row = 1; $row <= $highestRow; $row++) {
+        for ($col = 0; $col < $highestColumnIndex; $col++) {
+            $excelData[$row][] =(string)$objWorksheet->getCellByColumnAndRow($col, $row)->getValue();
+        }
+        /*可筛选固定的列
+       $excelData[$row]['id'] = $objPHPExcel->getActiveSheet()->getCell("A".$row)->getValue();//ID
+       $excelData[$row]['name'] = $objPHPExcel->getActiveSheet()->getCell("D".$row)->getValue();//姓名
+        */
+    }
+    return $excelData;
+}
+
+
+/**
+ * @param array $data  一个二维数组,结构如同从数据库查出来的数组
+ * @param array $title excel的第一行标题,一个数组,如果为空则没有标题
+ * @param string $filename  下载的文件名
+ * exportexcel($arr,array('id','账户','密码','昵称'),'文件名!');
+ */
+function excelWrite1($data=array(),$title=array(),$filename='report'){
+    header("Content-type:application/octet-stream");
+    header("Accept-Ranges:bytes");
+    header("Content-type:application/vnd.ms-excel");
+    header("Content-Disposition:attachment;filename=".$filename.".xls");
+    header("Pragma: no-cache");
+    header("Expires: 0");
+    //导出xls 开始
+    if (!empty($title)){
+        foreach ($title as $k => $v) {
+            $title[$k]=iconv("UTF-8", "GB2312",$v);
+        }
+        $title= implode("\t", $title);
+        echo "$title\n";
+    }
+    if (!empty($data)){
+        foreach($data as $key=>$val){
+            foreach ($val as $ck => $cv) {
+                $data[$key][$ck]=iconv("UTF-8", "GB2312", $cv);
+            }
+            $data[$key]=implode("\t", $data[$key]);
+
+        }
+        echo implode("\n",$data);
+    }
+}
+/*列索引*/
+function getExcelColumnValue($index){
+    $array = range('A', 'Z');
+    $columnValue = '';
+    if ($index >= 26) {
+        $columnValue = getExcelColumnValue(intval($index / 26) - 1) . $array[$index % 26];
+    } else {
+        $columnValue = $array[$index] . $columnValue;
+    }
+    return $columnValue;
+}
+
+    function excelWrite($fileName, $headArr, $data)
+    {
+        if (empty($data) || !is_array($data)) {
+            die("data must be a array");
+        }
+        if (empty($fileName)) {
+            exit;
+        }
+        $date = date("Y_m_d", time());
+        $fileName .= "_{$date}.xlsx";
+
+        //创建新的PHPExcel对象
+        $objPHPExcel = new PHPExcel();
+        $objProps = $objPHPExcel->getProperties();
+
+        if(is_array($headArr) && !empty($headArr)){
+            //设置表头
+            $columindex = 0;
+            foreach ($headArr as $key => $v) {
+                $colum = getExcelColumnValue($columindex);
+                $objPHPExcel->setActiveSheetIndex(0)->setCellValue($colum . '1', $v);
+                $columindex++;
+            }
+            $row = 2;
+        }else{
+            $row = 1;
+        }
+
+        $objActSheet = $objPHPExcel->getActiveSheet();
+        foreach ($data as $key => $rows) { //行写入
+            $columindex = 0;
+            foreach ($rows as $keyName => $value) {// 列写入
+                $colum = getExcelColumnValue($columindex);
+                $objActSheet->setCellValue($colum . $row, $value);
+                $columindex++;
+            }
+            $row++;
+        }
+
+        $fileName = iconv("utf-8", "gb2312", $fileName);
+        //重命名表
+        $objPHPExcel->getActiveSheet()->setTitle('Simple');
+        //设置活动单指数到第一个表,所以Excel打开这是第一个表
+        $objPHPExcel->setActiveSheetIndex(0);
+        //将输出重定向到一个客户端web浏览器(Excel2007)
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header("Content-Disposition: attachment; filename=\"$fileName\"");
+        header('Cache-Control: max-age=0');
+        $objWriter = PHPExcel_IOFactory::createWriter($objPHPExcel, 'Excel2007');
+
+        $objWriter->save('php://output');
+        die();
+        if (!empty($_GET['excel'])) {
+            $objWriter->save('php://output'); //文件通过浏览器下载
+        } else {
+            $objWriter->save($fileName); //脚本方式运行，保存在当前目录
+        }
+        exit;
+
+}
