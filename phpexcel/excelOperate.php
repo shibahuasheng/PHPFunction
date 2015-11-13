@@ -67,7 +67,7 @@ set_include_path(get_include_path() . PATH_SEPARATOR . './Classes/');
 include 'PHPExcel/IOFactory.php';
 
 $exceldata = excelRead(($_FILES[$fileElementName]['tmp_name']));
-excelWrite('data',$a = array(), $exceldata);
+excelWrite('data',$a = array(), $exceldata, false, 5);
 //或者$objWriter = new PHPExcel_Writer_Excel5($objPHPExcel); 非2007格式
 //$objWriter->save("a.xlsx");  存储excel
 
@@ -168,7 +168,7 @@ function getExcelColumnValue($index){
             exit;
         }
         if(is_numeric($colNum) && is_int($colNum+0) && ((int)$colNum > 0) ) {
-            $colNum = true;
+            $colNumCount = true;
         }
         $date = date("Y_m_d", time());
        /* if($local) {
@@ -187,7 +187,7 @@ function getExcelColumnValue($index){
             //设置表头
             $columindex = 0;
                 foreach ($headArr as $key => $v) {
-                    if($colNum ) {
+                    if($colNumCount ) {
                         if(((int)$columindex < (int)$colNum)) {
                             $colum = getExcelColumnValue($columindex);
                             $objPHPExcel->setActiveSheetIndex(0)->setCellValue($colum . '1', $v);
@@ -237,7 +237,7 @@ function getExcelColumnValue($index){
         foreach ($data as $key => $rows) { //行写入
             $columindex = 0;
             foreach ($rows as $keyName => $value) {// 列写入
-                if($colNum){
+                if($colNumCount){
                     if(((int)$columindex < (int)$colNum)) {
                         $colum = getExcelColumnValue($columindex);
                         //宽度
