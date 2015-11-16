@@ -60,7 +60,96 @@ if(@move_uploaded_file($_FILES[$fileElementName]['tmp_name'],$upFilePath) === FA
 //excel验证（标识符）todo
 //读取excel
 //将include设置为./Classses/ 路径
-
 set_include_path(get_include_path() . PATH_SEPARATOR . './Classes/');
 include 'PHPExcel/IOFactory.php';
+include('PHPExcel.php');
+
+
+
+$excelData = excelRead(($_FILES[$fileElementName]['tmp_name']));
+$excelHeader = array('a1','a2','a3','a4','a5','a6','a7','a8','a9','a10');
+excelWrite('aaa', $excelData,$excelHeader, false);
+
+function excelRead($excelfile){
+
+    if(is_null($excelfile)){
+       exit('excel文件不存在');
+   }
+
+    $exceldata = array();
+
+    $reader         =  PHPExcel_IOFactory::createReaderForFile($excelfile); #Excel2007
+    $reader->setReadDataOnly(true);
+    $excel= $reader->load($excelfile);
+    $sheet=$excel->getActiveSheet();
+    $highestRow = $sheet->getHighestRow(); // 取得总行数，从一开始
+    $highestColumm = $sheet->getHighestColumn(); // 取得总列数，从0开始
+
+    //检查excel存在于AZ位置上的密码是否为20021514
+    /*$key = $sheet -> getCellByColumnAndRow( 51 , 1 ) -> getValue();//按照索引取
+    if( $key != '20021514' ){}else{}*/
+
+    //不包含excel头行
+    for($row = 2 ;$row <= $highestRow ;$row++){
+        //直接选择列
+        $i = $row - 2;
+        $exceldata[$i][] = trim($sheet->getCellByColumnAndRow(0 , $row)->getValue());
+        $exceldata[$i][] = trim($sheet->getCellByColumnAndRow(1 , $row)->getValue());
+        $exceldata[$i][] = trim($sheet->getCellByColumnAndRow(2 , $row)->getValue());
+        $exceldata[$i][] = trim($sheet->getCellByColumnAndRow(3 , $row)->getValue());
+        $exceldata[$i][] = trim($sheet->getCellByColumnAndRow(4 , $row)->getValue());
+        $exceldata[$i][] = trim($sheet->getCellByColumnAndRow(5 , $row)->getValue());
+        $exceldata[$i][] = trim($sheet->getCellByColumnAndRow(6 , $row)->getValue());
+        $exceldata[$i][] = trim($sheet->getCellByColumnAndRow(7 , $row)->getValue());
+        $exceldata[$i][] = trim($sheet->getCellByColumnAndRow(8 , $row)->getValue());
+        $exceldata[$i][] = trim($sheet->getCellByColumnAndRow(9 , $row)->getValue());
+    }
+
+    //对数据做相应处理
+
+    return $exceldata;
+
+}
+
+function excelWrite($filename, $exceldata, $excelHeader, $local =false, $uploadPath = './upload/41'){
+    $writer =  new PHPExcel();
+    $writer -> setActiveSheetIndex(0);
+
+    $writer_sheet = $writer-> getActiveSheet();
+    $writerow = 1;
+    if(is_array($excelHeader) && !empty($excelHeader)){
+      foreach($excelHeader as $k => $v){
+          $writer_sheet ->setCellValueByColumnAndRow($k, $writerow, $v);
+      }
+        $writerow++;
+    }
+
+    foreach($exceldata as $data){
+        foreach($data as $k =>$v){
+            $writer_sheet -> setCellValueByColumnAndRow($k, $writerow, $v);
+        }
+        $writerow++;
+    }
+
+    //假设,之后加个默认上传路径
+    $filename = $filename.".xls" ;
+    $filename = iconv("utf-8", "gb2312", $filename);
+    if($local){
+
+        $output = $uploadPath."/".$filename ;
+        $PHPExcelWriter = PHPExcel_IOFactory::createWriter($writer, 'Excel5');
+        $PHPExcelWriter -> save($output);
+       /* header("Content-type: application/force-download");
+        header("Content-Disposition: attachment; Filename=\"$filename\"");
+        header("Content-Length: ".Filesize($output));
+        @readFile($output);*/
+    }else{
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header("Content-Disposition: attachment; filename=\"$filename\"");
+        header('Cache-Control: max-age=0');
+        $PHPExcelWriter = PHPExcel_IOFactory::createWriter($writer, 'Excel5');
+        $PHPExcelWriter->save('php://output');
+    }
+
+}
 
