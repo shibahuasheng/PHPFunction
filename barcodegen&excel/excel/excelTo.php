@@ -85,7 +85,7 @@ for ($i = 1; $i <= $data->sheets[0]['numRows']; $i++) {
     if($code){
         /*if(isset($_REQUEST['codebar']) && ($_REQUEST['text'])){*/
         /* $codebar = $_REQUEST['codebar']; *///条形码将要数据的内容
-        $codebar = "BCGcode39";
+        $codebar = "BCGcode128";
        /* $filename = $path.$code.".jpg";*/
       $filename = $path.$i."--".$code.".jpg";
        // filecode($codebar, $code, $filename);
