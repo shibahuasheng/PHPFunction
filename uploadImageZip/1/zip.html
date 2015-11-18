@@ -12,44 +12,55 @@ canvas {
 </head>
 <body>
 	<input id="logoimg" class="addlogo" type="file" multiple
-			accept="image/*" name="imgFile" onchange="getSize();readFiles(event);">
+			accept="image/*" name="imgFile" onchange="readFiles(event);">
 	<div id="imgs"></div>
     <img id="imgshow"/>
 	<input type="button" value="提交" onclick="upload()">
 	<script type="text/javascript">
-		function readFiles(evt) {
+
+        //可以自定义 压缩后的宽高
+        function readFiles(evt) {
+
 			var files = evt.target.files;
 			//console.log(files.length);
 			if (!files) {
 				alert("文件不支持");
 				return;
 			}
-
             for ( var i = 0; i < files.length; i++) {
 				//alert(files[i]);
 				var imgele = new Image();
 				var thesrc = window.URL.createObjectURL(files[i]);
 				imgele.src = thesrc;
 				imgele.onload = function() {
-					//$("#showlogo").attr("src",this.src); 
-// 					var c = document.getElementById("myCanvas");
-// 					c.style.display = "block";
-// 					var cxt = c.getContext("2d");
-// 					cxt.drawImage(this, 0, 0, 200, 200);
-					var canvas = document.createElement("canvas");
+                    //自定义压缩后的宽高
+                    var newWidth = 700,newHeight = 400;
+                    if(this.width < newWidth && this.height < newHeight){
+                        newWidth = this.width;
+                        newHeight = this.height;
+                    }else{
+                        //计算缩放比例
+                        var scale = newWidth/this.width <= newHeight/this.height ? newWidth/this.width : newHeight/this.height;
+                        newWidth = parseInt(this.width*scale);
+                        newHeight =parseInt(this.height*scale);
+                    }
+
+
+
+                    var canvas = document.createElement("canvas");
 					canvas.setAttribute("id", "myCanvas");
-					canvas.setAttribute("width", "200px");
-					canvas.setAttribute("height", "200px");
+					canvas.setAttribute("width", newWidth+"px");
+					canvas.setAttribute("height", newHeight+"px");
 					canvas.setAttribute("onclick", "del(this)");
 					canvas.innerHTML = "你的浏览器不支持";
 					var imgs = document.getElementById("imgs");
 					imgs.appendChild(canvas);
 					var cxt = canvas.getContext("2d");
-					cxt.drawImage(this, 0, 0, 200, 200);
+					cxt.drawImage(this, 0, 0, newWidth, newHeight);
 				}
 			}
 		}
-        var oldWidth,oldHeight;
+
         function getSize() {
             var f = document.getElementById("logoimg").files[0];
             var img = document.createElement("img");
