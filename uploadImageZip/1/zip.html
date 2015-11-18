@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>zip</title>
+<script src="jquery.js"></script>
+<style type="text/css">
+canvas {
+	margin: 10px;
+}
+</style>
+</head>
+<body>
+	<input id="logoimg" class="addlogo" type="file" multiple
+			accept="image/*" name="imgFile" onchange="getSize();readFiles(event);">
+	<div id="imgs"></div>
+    <img id="imgshow"/>
+	<input type="button" value="提交" onclick="upload()">
+	<script type="text/javascript">
+		function readFiles(evt) {
+			var files = evt.target.files;
+			//console.log(files.length);
+			if (!files) {
+				alert("文件不支持");
+				return;
+			}
+
+            for ( var i = 0; i < files.length; i++) {
+				//alert(files[i]);
+				var imgele = new Image();
+				var thesrc = window.URL.createObjectURL(files[i]);
+				imgele.src = thesrc;
+				imgele.onload = function() {
+					//$("#showlogo").attr("src",this.src); 
+// 					var c = document.getElementById("myCanvas");
+// 					c.style.display = "block";
+// 					var cxt = c.getContext("2d");
+// 					cxt.drawImage(this, 0, 0, 200, 200);
+					var canvas = document.createElement("canvas");
+					canvas.setAttribute("id", "myCanvas");
+					canvas.setAttribute("width", "200px");
+					canvas.setAttribute("height", "200px");
+					canvas.setAttribute("onclick", "del(this)");
+					canvas.innerHTML = "你的浏览器不支持";
+					var imgs = document.getElementById("imgs");
+					imgs.appendChild(canvas);
+					var cxt = canvas.getContext("2d");
+					cxt.drawImage(this, 0, 0, 200, 200);
+				}
+			}
+		}
+        var oldWidth,oldHeight;
+        function getSize() {
+            var f = document.getElementById("logoimg").files[0];
+            var img = document.createElement("img");
+            img.file = f;
+            img.onload = function () {
+                //alert(this.height+"|"+this.width);
+                oldWidth = this.width;
+                oldHeight = this.height;
+                alert("ss"+oldHeight);
+            };
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(f);
+        }
+
+		function del(view) {
+			$(view).remove();
+		}
+
+		function upload() {
+			$.each($("canvas"), function(i){
+				//alert(i);
+				var canvas = this;
+				//将图像输出为base64压缩的字符串  默认为image/png
+				var data = canvas.toDataURL("image/jpeg");
+                //data = cvs.toDataURL(mime_type, quality/100); 压缩质量
+                $("#imgshow").attr('src', data);
+				//alert(data);
+				//删除字符串前的提示信息 "data:image/png;base64,"  
+				//var b64 = data.substring(23);
+				var b64 = data.split(",")[1];
+				//POST到服务器上，生成图片                      
+				//alert(b64);
+	 			$.post("uploadOperate.php", {
+	 				imgData : b64,
+	 				imgName : i + ".jpeg"
+	 				}, function(response) {
+	 					//alert(response);
+	 			});
+			});
+		}
+	</script>
+</body>
+</html>
