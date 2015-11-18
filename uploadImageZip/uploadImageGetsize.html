@@ -1,0 +1,35 @@
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=gb2312">
+    <title>chinmo测试</title>
+
+</head>
+
+<body>
+<form   name=Myform >
+    <p><font color="red" size="6">上传文件支持格式：gif,jpg,jpeg,png,bmp</font></p>
+
+    <p>
+        <input   type="file" size="30" name="test" id="test" onchange="a()" value=submit>
+    </p>
+</form>
+<script type="text/javascript">
+/**
+ 判断要上传的图片文件大小、长度和宽度！
+ */
+        function a() {
+    var f = document.getElementById("test").files[0];
+    var img = document.createElement("img");
+    img.file = f;
+    img.onload = function() {
+        alert(this.height+"|"+this.width);
+    }
+    var reader = new FileReader();
+    reader.onload = function(e) {
+        img.src = e.target.result;
+    };
+    reader.readAsDataURL(f);
+}
+</script>
+</body>
+</html>
