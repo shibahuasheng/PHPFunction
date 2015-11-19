@@ -153,3 +153,54 @@ function excelWrite($filename, $exceldata, $excelHeader, $local =false, $uploadP
 
 }
 
+//每一行写入excel
+/**
+ * @param null $writer
+ * $writer =  new PHPExcel();
+$writer -> setActiveSheetIndex(0);
+ * @param array $data  一维数组
+ * @param int $writer_row_count 写入的行数
+ */
+function  prepare_excel($writer = null , $data = array() , $writer_row_count = 0){
+    if($writer == null){
+        echo "ERROR : no start_excel ";
+        exit();
+    }
+
+    $writer_sheet       = $writer -> getActiveSheet();
+
+    if($writer_row_count == 0){
+        //写表头，如不需要表头则传入参数从一开始
+        # = = = = = = = = = = # writer # = = = = = = = = = =
+
+        $writer_row_count   = 1;
+        $writer_sheet -> setCellValueByColumnAndRow(0 , $writer_row_count, "年纪");
+        $writer_sheet -> setCellValueByColumnAndRow(1 , $writer_row_count, "班级");
+        $writer_sheet -> setCellValueByColumnAndRow(2 , $writer_row_count, "座位号");
+        $writer_sheet -> setCellValueByColumnAndRow(3 , $writer_row_count, "姓名");
+        $writer_sheet -> setCellValueByColumnAndRow(4 , $writer_row_count, "性別(男1,女2)");
+        $writer_sheet -> setCellValueByColumnAndRow(5 , $writer_row_count, "学号");
+        $writer_sheet -> setCellValueByColumnAndRow(6 , $writer_row_count, "图书馆借阅号");
+        $writer_sheet -> setCellValueByColumnAndRow(7 , $writer_row_count, "账号");
+        $writer_sheet -> setCellValueByColumnAndRow(8 , $writer_row_count, "密码");
+        $writer_sheet -> setCellValueByColumnAndRow(9 , $writer_row_count, "身份证号");
+        $writer_sheet -> setCellValueByColumnAndRow(10 , $writer_row_count, "讯息");
+        $writer_sheet -> setCellValueByColumnAndRow(51 , $writer_row_count, "20021514"); //key 可以自定义唯一的excel（官方隐藏标志，可供上传检验）
+        $writer_row_count ++;
+    }else{
+        $writer_row_count += 2 ;
+    }
+
+    $writer_sheet -> setCellValueByColumnAndRow(0 , $writer_row_count, $data["grade"]);
+    $writer_sheet -> setCellValueByColumnAndRow(1 , $writer_row_count, $data["class"]);
+    $writer_sheet -> setCellValueByColumnAndRow(2 , $writer_row_count, $data["number"]);
+    $writer_sheet -> setCellValueByColumnAndRow(3 , $writer_row_count, $data["name"]);
+    $writer_sheet -> setCellValueByColumnAndRow(4 , $writer_row_count, $data["sex"]);
+    $writer_sheet -> setCellValueByColumnAndRow(5 , $writer_row_count, $data['school_number']);
+    $writer_sheet -> setCellValueByColumnAndRow(6 , $writer_row_count, $data['library_card']);
+    $writer_sheet -> setCellValueByColumnAndRow(7 , $writer_row_count, $data['account']);
+    $writer_sheet -> setCellValueByColumnAndRow(8 , $writer_row_count, $data["password"]);
+    $writer_sheet -> setCellValueByColumnAndRow(9 , $writer_row_count, $data["member_id_numbers"]);
+    $writer_sheet -> setCellValueByColumnAndRow(10 , $writer_row_count, $data["message"]);
+}
+
