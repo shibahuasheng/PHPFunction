@@ -191,6 +191,7 @@ function  prepare_excel($writer = null , $data = array() , $writer_row_count = 0
         $writer_row_count += 2 ;
     }
 
+    
     $writer_sheet -> setCellValueByColumnAndRow(0 , $writer_row_count, $data["grade"]);
     $writer_sheet -> setCellValueByColumnAndRow(1 , $writer_row_count, $data["class"]);
     $writer_sheet -> setCellValueByColumnAndRow(2 , $writer_row_count, $data["number"]);
